@@ -56,8 +56,10 @@ class Calculator extends StatefulWidget {
   _CalculatorState createState() => _CalculatorState();
 }
 
+
 class _CalculatorState extends State<Calculator> {
   dynamic text = '0';
+  String currentOperation = ''; // Variable para rastrear la operación actual
   double numOne = 0;
   double numTwo = 0;
   dynamic result = '';
@@ -141,6 +143,18 @@ class _CalculatorState extends State<Calculator> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.end,
           children: [
+            // Mostrar la operación actual en la parte superior
+            Padding(
+              padding: EdgeInsets.all(10.0),
+              child: Text(
+                currentOperation,
+                textAlign: TextAlign.right, // Alinea la operación a la derecha
+                style: TextStyle(
+                  color: Colors.grey,
+                  fontSize: 20,
+                ),
+              ),
+            ),
             SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               child: Row(
@@ -240,6 +254,7 @@ class _CalculatorState extends State<Calculator> {
   void calculation(String btnText) {
     if (btnText == 'AC') {
       text = '0';
+      currentOperation = ''; // Limpiar la operación actual
       numOne = 0;
       numTwo = 0;
       result = '';
@@ -277,6 +292,8 @@ class _CalculatorState extends State<Calculator> {
         preOpr = opr;
         opr = btnText;
         result = '';
+        // Actualizar la operación actual
+        currentOperation = '$numOne $preOpr $numTwo';
       }
     } else if (btnText == '%') {
       if (result.isNotEmpty) {
