@@ -56,20 +56,19 @@ class Calculator extends StatefulWidget {
   _CalculatorState createState() => _CalculatorState();
 }
 
-
 class _CalculatorState extends State<Calculator> {
-  dynamic text = '0';
-  String currentOperation = ''; // Variable para rastrear la operación actual
+  String text = '0';
+  String currentOperation = '';
   double numOne = 0;
   double numTwo = 0;
-  dynamic result = '';
-  dynamic finalResult = '';
-  dynamic opr = '';
-  dynamic preOpr = '';
+  String result = '';
+  String finalResult = '';
+  String opr = '';
+  String preOpr = '';
 
   @override
   Widget build(BuildContext context) {
-    Widget calcButton(String btntxt, Color btncolor, Color textcolor, String btnText,
+    Widget calcButton(String btntxt, Color btncolor, Color textcolor,
         {bool operation = false, double fontSize = 28.0, double width = 75}) {
       return Container(
         width: width,
@@ -80,15 +79,16 @@ class _CalculatorState extends State<Calculator> {
         ),
         child: ElevatedButton(
           onPressed: () {
-            if (btnText == 'DEL') {
-              if (result.isNotEmpty) {
-                setState(() {
-                  result = result.substring(0, result.length - 1);
-                  finalResult = result;
-                });
-              }
+            if (btntxt == "=") {
+              calculate();
+            } else if (operation) {
+              handleOperation(btntxt);
+            } else if (btntxt == "AC") {
+              clearAll();
+            } else if (btntxt == "DEL") {
+              deleteLastCharacter();
             } else {
-              calculation(btnText);
+              handleInput(btntxt);
             }
           },
           style: ButtonStyle(
@@ -100,20 +100,7 @@ class _CalculatorState extends State<Calculator> {
               EdgeInsets.all(20),
             ),
           ),
-          child: operation
-              ? Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                '+',
-                style: TextStyle(
-                  fontSize: fontSize,
-                  color: Colors.black,
-                ),
-              ),
-            ],
-          )
-              : Text(
+          child: Text(
             btntxt,
             style: TextStyle(
               fontSize: fontSize,
@@ -143,74 +130,67 @@ class _CalculatorState extends State<Calculator> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.end,
           children: [
-            // Mostrar la operación actual en la parte superior
-            Padding(
+            Container(
+              alignment: Alignment.bottomRight,
               padding: EdgeInsets.all(10.0),
               child: Text(
                 currentOperation,
-                textAlign: TextAlign.right, // Alinea la operación a la derecha
                 style: TextStyle(
                   color: Colors.grey,
                   fontSize: 20,
                 ),
               ),
             ),
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  Padding(
-                    padding: EdgeInsets.all(10.0),
-                    child: Text(
-                      text,
-                      textAlign: TextAlign.left,
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 60,
-                      ),
-                    ),
-                  ),
-                ],
+            SizedBox(height: 10),
+            Container(
+              alignment: Alignment.bottomRight,
+              padding: EdgeInsets.all(10.0),
+              child: Text(
+                text,
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 60,
+                ),
               ),
             ),
+            SizedBox(height: 10),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                calcButton('AC', Theme.of(context).primaryColor, Colors.black, 'AC', fontSize: 24.0),
-                calcButton('+/-', Theme.of(context).primaryColor, Colors.black, '+/-', fontSize: 24.0),
-                calcButton('%', Theme.of(context).primaryColor, Colors.black, '%', fontSize: 24.0),
-                calcButton('DEL', Theme.of(context).primaryColor, Colors.black, 'DEL', fontSize: 24.0),
+                calcButton('AC', Theme.of(context).primaryColor, Colors.black, fontSize: 24.0),
+                calcButton('+/-', Theme.of(context).primaryColor, Colors.black, fontSize: 24.0),
+                calcButton('%', Theme.of(context).primaryColor, Colors.black, fontSize: 24.0),
+                calcButton('/', Theme.of(context).primaryColor, Colors.black, operation: true, fontSize: 24.0),
               ],
             ),
             SizedBox(height: 10),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                calcButton('7', Theme.of(context).primaryColor, Colors.black, '7'),
-                calcButton('8', Theme.of(context).primaryColor, Colors.black, '8'),
-                calcButton('9', Theme.of(context).primaryColor, Colors.black, '9'),
-                calcButton('/', Theme.of(context).primaryColor, Colors.black, '/', fontSize: 24.0),
+                calcButton('7', Theme.of(context).primaryColor, Colors.black),
+                calcButton('8', Theme.of(context).primaryColor, Colors.black),
+                calcButton('9', Theme.of(context).primaryColor, Colors.black),
+                calcButton('x', Theme.of(context).primaryColor, Colors.black, operation: true, fontSize: 24.0),
               ],
             ),
             SizedBox(height: 10),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                calcButton('4', Theme.of(context).primaryColor, Colors.black, '4'),
-                calcButton('5', Theme.of(context).primaryColor, Colors.black, '5'),
-                calcButton('6', Theme.of(context).primaryColor, Colors.black, '6'),
-                calcButton('x', Theme.of(context).primaryColor, Colors.black, 'x', fontSize: 24.0),
+                calcButton('4', Theme.of(context).primaryColor, Colors.black),
+                calcButton('5', Theme.of(context).primaryColor, Colors.black),
+                calcButton('6', Theme.of(context).primaryColor, Colors.black),
+                calcButton('-', Theme.of(context).primaryColor, Colors.black, operation: true, fontSize: 24.0),
               ],
             ),
             SizedBox(height: 10),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                calcButton('1', Theme.of(context).primaryColor, Colors.black, '1'),
-                calcButton('2', Theme.of(context).primaryColor, Colors.black, '2'),
-                calcButton('3', Theme.of(context).primaryColor, Colors.black, '3'),
-                calcButton('+', Theme.of(context).primaryColor, Colors.black, '+', operation: true, fontSize: 24.0),
+                calcButton('1', Theme.of(context).primaryColor, Colors.black),
+                calcButton('2', Theme.of(context).primaryColor, Colors.black),
+                calcButton('3', Theme.of(context).primaryColor, Colors.black),
+                calcButton('+', Theme.of(context).primaryColor, Colors.black, operation: true, fontSize: 24.0),
               ],
             ),
             SizedBox(height: 10),
@@ -222,7 +202,7 @@ class _CalculatorState extends State<Calculator> {
                   height: 75,
                   child: ElevatedButton(
                     onPressed: () {
-                      calculation('0');
+                      handleInput('0');
                     },
                     style: ButtonStyle(
                       shape: MaterialStateProperty.all<CircleBorder>(CircleBorder()),
@@ -240,9 +220,9 @@ class _CalculatorState extends State<Calculator> {
                     ),
                   ),
                 ),
-                calcButton('.', Theme.of(context).primaryColor, Colors.black, '.'),
-                calcButton('=', Theme.of(context).primaryColor, Colors.black, '=', fontSize: 24.0),
-                calcButton('+', Theme.of(context).primaryColor, Colors.black, '+', operation: true, fontSize: 24.0),
+                calcButton('.', Theme.of(context).primaryColor, Colors.black),
+                calcButton('=', Theme.of(context).primaryColor, Colors.black, fontSize: 24.0),
+                calcButton('DEL', Theme.of(context).primaryColor, Colors.black),
               ],
             ),
           ],
@@ -251,110 +231,84 @@ class _CalculatorState extends State<Calculator> {
     );
   }
 
-  void calculation(String btnText) {
-    if (btnText == 'AC') {
-      text = '0';
-      currentOperation = ''; // Limpiar la operación actual
-      numOne = 0;
-      numTwo = 0;
-      result = '';
-      finalResult = '0';
-      opr = '';
-      preOpr = '';
-    } else if (opr == '=' && btnText == '=') {
-      if (preOpr == '+') {
-        finalResult = add().toString();
-      } else if (preOpr == '-') {
-        finalResult = sub().toString();
-      } else if (preOpr == 'x') {
-        finalResult = mul().toString();
-      } else if (preOpr == '/') {
-        finalResult = div().toString();
-      }
-    } else if (btnText == '+' || btnText == '-' || btnText == 'x' || btnText == '/' || btnText == '=') {
-      if (result.isNotEmpty) {
-        if (numOne == 0) {
-          numOne = double.parse(result);
-        } else {
-          if (result != '.') {
-            numTwo = double.parse(result);
-          }
-        }
-        if (opr == '+') {
-          finalResult = add().toString();
-        } else if (opr == '-') {
-          finalResult = sub().toString();
-        } else if (opr == 'x') {
-          finalResult = mul().toString();
-        } else if (opr == '/') {
-          finalResult = div().toString();
-        }
-        preOpr = opr;
-        opr = btnText;
-        result = '';
-        // Actualizar la operación actual
-        currentOperation = '$numOne $preOpr $numTwo';
-      }
-    } else if (btnText == '%') {
-      if (result.isNotEmpty) {
-        result = (double.parse(result) / 100).toString();
-        finalResult = doesContainDecimal(result).toString();
-      }
-    } else if (btnText == '.') {
-      if (result.isNotEmpty && !result.contains('.')) {
-        result = result + '.';
-        finalResult = result;
-      }
-    } else if (btnText == '+/-') {
-      if (result.isNotEmpty) {
-        if (result.startsWith('-')) {
-          result = result.substring(1);
-        } else if (result != '0') {
-          result = '-' + result;
-        }
-        finalResult = result;
-      }
+  void handleInput(String input) {
+    if (result == '0' || result == 'ERROR') {
+      result = input;
     } else {
-      result = result + btnText;
-      finalResult = result;
+      result += input;
     }
-
+    finalResult = result;
     setState(() {
       text = finalResult;
     });
   }
 
-  double add() {
-    result = (numOne + numTwo).toString();
-    numOne = double.parse(result);
-    return doesContainDecimal(result);
-  }
-
-  double sub() {
-    result = (numOne - numTwo).toString();
-    numOne = double.parse(result);
-    return doesContainDecimal(result);
-  }
-
-  double mul() {
-    result = (numOne * numTwo).toString();
-    numOne = double.parse(result);
-    return doesContainDecimal(result);
-  }
-
-  double div() {
-    result = (numOne / numTwo).toString();
-    numOne = double.parse(result);
-    return doesContainDecimal(result);
-  }
-
-  double doesContainDecimal(dynamic result) {
-    if (result.toString().contains('.')) {
-      List<String> splitDecimal = result.toString().split('.');
-      if (!(int.parse(splitDecimal[1]) > 0)) {
-        return double.parse(splitDecimal[0]);
-      }
+  void handleOperation(String operation) {
+    if (opr != '') {
+      calculate();
+      preOpr = opr;
+      opr = operation;
+      currentOperation = '$numOne $preOpr';
+    } else {
+      opr = operation;
+      numOne = double.parse(result);
+      currentOperation = '$numOne $opr';
+      result = '';
     }
-    return double.parse(result);
+  }
+
+  void calculate() {
+    if (opr != '' && result != '') {
+      numTwo = double.parse(result);
+      switch (opr) {
+        case '+':
+          result = (numOne + numTwo).toString();
+          break;
+        case '-':
+          result = (numOne - numTwo).toString();
+          break;
+        case 'x':
+        case '×':
+          result = (numOne * numTwo).toString();
+          break;
+        case '/':
+          if (numTwo != 0) {
+            result = (numOne / numTwo).toString();
+          } else {
+            result = 'ERROR';
+          }
+          break;
+      }
+      opr = '';
+      numOne = double.parse(result);
+      currentOperation = '';
+      finalResult = result;
+      setState(() {
+        text = finalResult;
+      });
+    }
+  }
+
+  void clearAll() {
+    result = '0';
+    currentOperation = '';
+    numOne = 0;
+    numTwo = 0;
+    finalResult = '';
+    opr = '';
+    preOpr = '';
+    setState(() {
+      text = result;
+    });
+  }
+
+  void deleteLastCharacter() {
+    if (result.isNotEmpty) {
+      result = result.substring(0, result.length - 1);
+      finalResult = result;
+      setState(() {
+        text = finalResult;
+      });
+    }
   }
 }
