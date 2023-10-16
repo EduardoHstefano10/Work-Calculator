@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
-void main() => runApp(MyApp());
+void main() => runApp(MaterialApp(
+  home: MyApp(),
+));
 
 class MyApp extends StatefulWidget {
   @override
@@ -66,9 +68,17 @@ class _CalculatorState extends State<Calculator> {
   String opr = '';
   String preOpr = '';
 
+  Color getBackgroundColor() {
+    return widget.isDarkMode ? Colors.black : Colors.white;
+  }
+
+  Color getTextColor() {
+    return widget.isDarkMode ? Colors.white : Colors.black;
+  }
+
   @override
   Widget build(BuildContext context) {
-    Widget calcButton(String btntxt, Color btncolor, Color textcolor,
+    Widget calcButton(String btntxt, Color btncolor,
         {bool operation = false, double fontSize = 28.0, double width = 75}) {
       return Container(
         width: width,
@@ -87,6 +97,12 @@ class _CalculatorState extends State<Calculator> {
               clearAll();
             } else if (btntxt == "DEL") {
               deleteLastCharacter();
+            } else if (btntxt == "+/-") {
+              // Toggle sign
+              handleSign();
+            } else if (btntxt == "%") {
+              // Calculate percentage
+              calculatePercentage();
             } else {
               handleInput(btntxt);
             }
@@ -94,7 +110,7 @@ class _CalculatorState extends State<Calculator> {
           style: ButtonStyle(
             shape: MaterialStateProperty.all<CircleBorder>(CircleBorder()),
             backgroundColor: MaterialStateProperty.all<Color>(
-              operation ? Colors.orange : Colors.transparent,
+              operation ? Colors.orange : btncolor,
             ),
             padding: MaterialStateProperty.all<EdgeInsetsGeometry>(
               EdgeInsets.all(20),
@@ -104,7 +120,7 @@ class _CalculatorState extends State<Calculator> {
             btntxt,
             style: TextStyle(
               fontSize: fontSize,
-              color: textcolor,
+              color: operation ? Colors.black : getTextColor(),
             ),
           ),
         ),
@@ -112,19 +128,26 @@ class _CalculatorState extends State<Calculator> {
     }
 
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: getBackgroundColor(),
       appBar: AppBar(
-        title: Text('Calculator'),
-        backgroundColor: Colors.black,
+        title: Text(
+          'Calculadora de Hernandez 😎',
+          style: TextStyle(color: getTextColor()), // Añadir este estilo
+        ),
+        backgroundColor: getBackgroundColor(),
         actions: [
           IconButton(
-            icon: widget.isDarkMode ? Icon(Icons.brightness_7) : Icon(Icons.brightness_4),
+            icon: Icon(
+              widget.isDarkMode ? Icons.brightness_7 : Icons.brightness_4,
+              color: getTextColor(),
+            ),
             onPressed: () {
               widget.toggleTheme();
             },
           ),
         ],
       ),
+
       body: Padding(
         padding: EdgeInsets.symmetric(horizontal: 5),
         child: Column(
@@ -148,7 +171,7 @@ class _CalculatorState extends State<Calculator> {
               child: Text(
                 text,
                 style: TextStyle(
-                  color: Colors.white,
+                  color: getTextColor(),
                   fontSize: 60,
                 ),
               ),
@@ -157,40 +180,40 @@ class _CalculatorState extends State<Calculator> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                calcButton('AC', Theme.of(context).primaryColor, Colors.black, fontSize: 24.0),
-                calcButton('+/-', Theme.of(context).primaryColor, Colors.black, fontSize: 24.0),
-                calcButton('%', Theme.of(context).primaryColor, Colors.black, fontSize: 24.0),
-                calcButton('/', Theme.of(context).primaryColor, Colors.black, operation: true, fontSize: 24.0),
+                calcButton('AC', Theme.of(context).primaryColor, fontSize: 24.0),
+                calcButton('+/-', Theme.of(context).primaryColor, fontSize: 24.0),
+                calcButton('%', Theme.of(context).primaryColor, fontSize: 24.0),
+                calcButton('/', Theme.of(context).primaryColor, operation: true, fontSize: 24.0),
               ],
             ),
             SizedBox(height: 10),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                calcButton('7', Theme.of(context).primaryColor, Colors.black),
-                calcButton('8', Theme.of(context).primaryColor, Colors.black),
-                calcButton('9', Theme.of(context).primaryColor, Colors.black),
-                calcButton('x', Theme.of(context).primaryColor, Colors.black, operation: true, fontSize: 24.0),
+                calcButton('7', Theme.of(context).primaryColor),
+                calcButton('8', Theme.of(context).primaryColor),
+                calcButton('9', Theme.of(context).primaryColor),
+                calcButton('x', Theme.of(context).primaryColor, operation: true, fontSize: 24.0),
               ],
             ),
             SizedBox(height: 10),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                calcButton('4', Theme.of(context).primaryColor, Colors.black),
-                calcButton('5', Theme.of(context).primaryColor, Colors.black),
-                calcButton('6', Theme.of(context).primaryColor, Colors.black),
-                calcButton('-', Theme.of(context).primaryColor, Colors.black, operation: true, fontSize: 24.0),
+                calcButton('4', Theme.of(context).primaryColor),
+                calcButton('5', Theme.of(context).primaryColor),
+                calcButton('6', Theme.of(context).primaryColor),
+                calcButton('-', Theme.of(context).primaryColor, operation: true, fontSize: 24.0),
               ],
             ),
             SizedBox(height: 10),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                calcButton('1', Theme.of(context).primaryColor, Colors.black),
-                calcButton('2', Theme.of(context).primaryColor, Colors.black),
-                calcButton('3', Theme.of(context).primaryColor, Colors.black),
-                calcButton('+', Theme.of(context).primaryColor, Colors.black, operation: true, fontSize: 24.0),
+                calcButton('1', Theme.of(context).primaryColor),
+                calcButton('2', Theme.of(context).primaryColor),
+                calcButton('3', Theme.of(context).primaryColor),
+                calcButton('+', Theme.of(context).primaryColor, operation: true, fontSize: 24.0),
               ],
             ),
             SizedBox(height: 10),
@@ -206,7 +229,7 @@ class _CalculatorState extends State<Calculator> {
                     },
                     style: ButtonStyle(
                       shape: MaterialStateProperty.all<CircleBorder>(CircleBorder()),
-                      backgroundColor: MaterialStateProperty.all<Color>(Colors.black),
+                      backgroundColor: MaterialStateProperty.all<Color>(getBackgroundColor()),
                       padding: MaterialStateProperty.all<EdgeInsetsGeometry>(
                         EdgeInsets.all(20),
                       ),
@@ -215,14 +238,14 @@ class _CalculatorState extends State<Calculator> {
                       "0",
                       style: TextStyle(
                         fontSize: 28,
-                        color: Colors.white,
+                        color: getTextColor(),
                       ),
                     ),
                   ),
                 ),
-                calcButton('.', Theme.of(context).primaryColor, Colors.black),
-                calcButton('=', Theme.of(context).primaryColor, Colors.black, fontSize: 24.0),
-                calcButton('DEL', Theme.of(context).primaryColor, Colors.black),
+                calcButton('.', Theme.of(context).primaryColor),
+                calcButton('=', Theme.of(context).primaryColor, operation: true, fontSize: 24.0),
+                calcButton('DEL', Theme.of(context).primaryColor, operation: false, fontSize: 24.0),
               ],
             ),
           ],
@@ -303,8 +326,50 @@ class _CalculatorState extends State<Calculator> {
   }
 
   void deleteLastCharacter() {
-    if (result.isNotEmpty) {
+    if (result.isNotEmpty && result != '0' && result != 'ERROR') {
       result = result.substring(0, result.length - 1);
+      finalResult = result;
+      setState(() {
+        text = finalResult;
+      });
+    } else if (result == '0' && currentOperation.isNotEmpty) {
+      // Si result es '0' y hay una operación actual, elimina la operación y muestra el número anterior.
+      currentOperation = currentOperation.substring(0, currentOperation.length - 1);
+      setState(() {
+        text = currentOperation;
+      });
+    } else if (result == '0' || result == 'ERROR') {
+      // Si result es '0' o 'ERROR', no hacemos nada
+    }
+    if (result.isEmpty) {
+      // Si la cadena está vacía, restablecemos a '0'
+      result = '0';
+      setState(() {
+        text = result;
+      });
+    }
+  }
+
+
+  void handleSign() {
+    if (result != '0' && result != 'ERROR') {
+      if (result[0] == '-') {
+        result = result.substring(1);
+      } else {
+        result = '-' + result;
+      }
+      finalResult = result;
+      setState(() {
+        text = finalResult;
+      });
+    }
+  }
+
+  void calculatePercentage() {
+    if (result != '0' && result != 'ERROR') {
+      numOne = double.parse(result);
+      numOne = numOne / 100;
+      result = numOne.toString();
       finalResult = result;
       setState(() {
         text = finalResult;
